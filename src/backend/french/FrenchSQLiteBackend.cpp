@@ -1,8 +1,12 @@
 /*
- * FrenchSQLiteBackend.cpp
+ *Copyright (c) 2013 ACEBEDO Alexandre.
+ *All rights reserved. This program and the accompanying materials
+ *are made available under the terms of the GNU Public License v3.0
+ *which accompanies this distribution, and is available at
+ *http://www.gnu.org/licenses/gpl.html
  *
- *  Created on: 14 mai 2013
- *      Author: aacebedo
+ *Contributors:
+ *    ACEBEDO Alexandre - initial API and implementation
  */
 
 #include <algorithm>
@@ -209,21 +213,32 @@ namespace qonjug
     Conjugation* res = 0;
     const FrenchVerb* pVerb = dynamic_cast<const FrenchVerb*>(&verb);
     char *sqlStatement =
-        sqlite3_mprintf("SELECT \
-CASE WHEN (SELECT aux_tense FROM mode_tense WHERE conjugations.mode=mode_tense.mode AND mode_tense.mode ='%q' \
-AND conjugations.tense=mode_tense.tense AND mode_tense.tense= '%q' ) IS NOT NULL THEN \
-(SELECT conjugations.termination FROM conjugations WHERE verb = verbs.auxiliary AND persons.pronoun = conjugations.pronoun ) || ' ' || radical || conjugations.termination \
-ELSE radical || conjugations.termination END AS  conjugation, \
-conjugations.pronoun \
-FROM verbs, conjugations,persons,mode_tense \
+        sqlite3_mprintf(
+            "SELECT CASE WHEN \
+(SELECT aux_tense \
+FROM mode_tense WHERE \
+conjugations2.mode=mode_tense.mode AND \
+mode_tense.mode = conjugations2.mode AND \
+conjugations2.tense=mode_tense.tense AND \
+mode_tense.tense= conjugations2.tense) IS NOT NULL THEN \
+(SELECT conjugations.termination \
+FROM conjugations \
+WHERE conjugations.mode = conjugations2.mode \
+AND conjugations.tense = mode_tense2.aux_tense \
+AND verb = verbs.auxiliary \
+AND persons.pronoun = conjugations.pronoun) || ' ' || radical || conjugations2.termination \
+ELSE radical || conjugations2.termination END  as conjugation, \
+conjugations2.pronoun \
+FROM verbs, conjugations as conjugations2, persons, mode_tense as mode_tense2 \
 WHERE verbs.radical || verbs.termination = '%q' \
-AND conjugations.verb = verbs.radical || verbs.termination \
-AND conjugations.pronoun = persons.pronoun \
-AND conjugations.mode ='%q' \
-AND conjugations.tense = '%q' \
-GROUP  BY conjugations.pronoun order by number,ord;",
-                mode.getName().c_str(),
-            tense.getName().c_str(),
+AND conjugations2.verb = verbs.radical || verbs.termination \
+AND conjugations2.pronoun = persons.pronoun \
+AND mode_tense2.mode = conjugations2.mode \
+AND mode_tense2.tense = conjugations2.tense \
+AND conjugations2.mode ='%q' \
+AND conjugations2.tense = '%q' \
+GROUP  BY conjugations2.pronoun \
+ORDER BY number,ord;",
             verb.toString().c_str(), mode.getName().c_str(),
             tense.getName().c_str());
     std::string statementString(sqlStatement);
@@ -247,7 +262,7 @@ GROUP  BY conjugations.pronoun order by number,ord;",
                   {
                     terms.push_back(
                         std::make_pair<Person, std::string>(*itPerson,
-                                pSt->GetColumnString(CONJUGATION_COL)));
+                            pSt->GetColumnString(CONJUGATION_COL)));
                   }
               }
             res = new Conjugation(verb, mode, tense, terms);

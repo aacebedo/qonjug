@@ -1,9 +1,13 @@
 /*
- * ConsoleRenderer.cpp
- *
- *  Created on: 18 mai 2013
- *      Author: aacebedo
- */
+*Copyright (c) 2013 ACEBEDO Alexandre.
+*All rights reserved. This program and the accompanying materials
+*are made available under the terms of the GNU Public License v3.0
+*which accompanies this distribution, and is available at
+*http://www.gnu.org/licenses/gpl.html
+*
+*Contributors:
+*    ACEBEDO Alexandre - initial API and implementation
+*/
 
 #include <stdlib.h>
 #include <iostream>
@@ -15,33 +19,10 @@ namespace qonjug
 
   ConsoleRenderer::ConsoleRenderer()
   {
-    // TODO Auto-generated constructor stub
-
   }
 
   ConsoleRenderer::~ConsoleRenderer()
   {
-    // TODO Auto-generated destructor stub
   }
 
-  void
-  ConsoleRenderer::render(const Conjugation& c)
-  {
-    std::cout << c.getMode().getName() << " " << c.getTense().getName() << ":"
-        << std::endl;
-
-    for (Conjugation::Terms::const_iterator it = c.getTerms().begin();
-        it != c.getTerms().end(); ++it)
-      {
-
-     //   if(((it->first.getPronoun()=="je" && std::find(voyels,voyels+(sizeof(voyels)/sizeof(char)),c.getTerms()[0]))))
-
-        std::cout << it->first.getPronoun() << " " << it->second << std::endl;
-      }
-    std::cout << std::endl;
-    std::cout << std::endl;
-    std::cout << std::endl;
-
-  }
-
-} /* namespace konjugueur */
+}

@@ -1,7 +1,17 @@
+/*
+*Copyright (c) 2013 ACEBEDO Alexandre.
+*All rights reserved. This program and the accompanying materials
+*are made available under the terms of the GNU Public License v3.0
+*which accompanies this distribution, and is available at
+*http://www.gnu.org/licenses/gpl.html
+*
+*Contributors:
+*    ACEBEDO Alexandre - initial API and implementation
+*/
+
 #include "conjugation/Verb.h"
 #include "conjugation/Conjugation.h"
 #include "rendering/FrenchConsoleRenderer.h"
-#include "VerbExceptionStorage.h"
 #include "backend/french/FrenchSQLiteBackend.h"
 #include "VerbFactory.h"
 #include <log4cxx/logger.h>
