@@ -9,13 +9,11 @@
 *    ACEBEDO Alexandre - initial API and implementation
 */
 
-#include "conjugation/ConjugationElementFactory.h"
+#include "backend/ConjugationBackend.h"
 
 namespace qonjug
 {
-
-  ConjugationElementFactory::~ConjugationElementFactory()
+  ConjugationBackend::~ConjugationBackend()
   {
   }
-
 }

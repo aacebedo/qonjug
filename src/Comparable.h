@@ -9,17 +9,17 @@
  *    ACEBEDO Alexandre - initial API and implementation
  */
 
-#ifndef QONJUG_CLONABLE_H_
-#define QONJUG_CLONABLE_H_
+#ifndef QONJUG_COMPARABLE_H_
+#define QONJUG_COMPARABLE_H_
 
 namespace qonjug
 {
   template<typename T>
     /**
-     * Interface for clonable objects.
-     * Implementing this interface means that object is able to to clone itself.
+     * Interface for Comparable objects.
+     * Implementing this interface means that object can be compared
      */
-    class Clonable
+    class Comparable
     {
     public:
 
@@ -27,20 +27,22 @@ namespace qonjug
        * Default destructor.
        */
       virtual
-      ~Clonable() = 0;
+      ~Comparable() = 0;
 
       /**
-       * Creates and returns a clone of the object.
+       * Test for less object.
+       * @param val the value to compare to.
+       * @return a boolean if the current object is less than the given value.
        */
-      virtual T*
-      clone() const = 0;
+      virtual bool
+      isLess(const T& val) const = 0;
     };
 }
 
 namespace qonjug
 {
   template<typename T>
-    Clonable<T>::~Clonable()
+    Comparable<T>::~Comparable()
     {
     }
 }

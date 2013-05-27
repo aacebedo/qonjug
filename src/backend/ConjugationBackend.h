@@ -9,21 +9,21 @@
  *    ACEBEDO Alexandre - initial API and implementation
  */
 
-#ifndef QONJUG_VERBACCESSBACKEND_H_
-#define QONJUG_VERBACCESSBACKEND_H_
+#ifndef QONJUG_CONJUGATIONBACKEND_H_
+#define QONJUG_CONJUGATIONBACKEND_H_
 
 #include <stdexcept>
 #include <string>
-#include <boost/interprocess/smart_ptr/unique_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <vector>
 
+#include "fwd_decls.h"
 namespace qonjug
 {
   /**
    * Interface for backends used for conjugation.
    */
-  class VerbAccessBackend
+  class ConjugationBackend
   {
   public:
     /**
@@ -31,9 +31,9 @@ namespace qonjug
      */
     typedef std::vector<boost::shared_ptr<Verb> > VerbSearchResult;
     typedef std::vector<boost::shared_ptr<Conjugation> > Conjugations;
-    typedef std::vector<boost::shared_ptr<Person> > Persons;
-    typedef std::vector<boost::shared_ptr<Tense> > Tenses;
-    typedef std::vector<boost::shared_ptr<Mode> > Modes;
+    typedef std::vector<const Person*> Persons;
+    typedef std::vector<const Tense*> Tenses;
+    typedef std::vector<const Mode*> Modes;
 
   public:
 
@@ -41,7 +41,7 @@ namespace qonjug
      * Default constructor.
      */
     virtual
-    ~VerbAccessBackend() = 0;
+    ~ConjugationBackend() = 0;
 
     /**
      * Search the database for a verb.
@@ -51,9 +51,8 @@ namespace qonjug
      * If no verb has been found, an empty vector will be returned.
      * @throw runtime_error if something went wrong during the search.
      */
-    virtual boost::shared_ptr<VerbSearchResult>
-    searchVerb(const std::string& toSearch) throw (std::out_of_range,
-        std::runtime_error) = 0;
+    virtual VerbSearchResult*
+    searchVerb(const std::string& toSearch) throw (std::runtime_error) = 0;
 
     /**
      * Conjugate a verb to all times and all modes.
@@ -62,7 +61,7 @@ namespace qonjug
      * If the verb is not found, an empty vector will be returned.
      * @throw runtime_error if something went wrong during the search.
      */
-    virtual boost::shared_ptr<Conjugations>
+    virtual Conjugations*
     conjugate(const Verb& verb) throw (std::runtime_error) = 0;
 
     /**
@@ -73,7 +72,7 @@ namespace qonjug
      * If the verb is not found, an empty vector will be returned.
      * @throw runtime_error if something went wrong during the search.
      */
-    virtual boost::shared_ptr<Conjugations>
+    virtual Conjugations*
     conjugate(const Verb& verb, const Mode& mode) throw (std::runtime_error) = 0;
 
     /**
@@ -85,18 +84,20 @@ namespace qonjug
      * @throw out_of_range if a verb, the mode or the tense is not found.
      * @throw runtime_error if something went wrong during the search.
      */
-    virtual boost::shared_ptr<Conjugation>
+    virtual Conjugation*
     conjugate(const Verb& verb, const Mode& mode, const Tense& tense)
         throw (std::out_of_range, std::runtime_error) = 0;
 
     /**
      * Get available persons.
+     * @ return a pointer to a vector containing the available persons.
      */
     virtual const Persons&
     getAvailablePersons() const = 0;
 
     /**
      * Get available modes.
+     * @ return a pointer to a vector containing the available modes.
      */
     virtual const Modes&
     getAvailableModes() const = 0;

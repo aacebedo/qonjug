@@ -9,50 +9,65 @@
 *    ACEBEDO Alexandre - initial API and implementation
 */
 
-#ifndef PERSON_H_
-#define PERSON_H_
+#ifndef QONJUG_PERSON_H_
+#define QONJUG_PERSON_H_
 
 #include <string>
 #include <stdint.h>
 #include <algorithm>
+#include "Clonable.h"
+#include "Comparable.h"
 #include "conjugation/Genre.h"
 #include "conjugation/Number.h"
 
 namespace qonjug
 {
-
-  class Person
+  /**
+   * Interface representing the person concept.
+   */
+  class Person : public Clonable<Person>, public Comparable<Person>
   {
   public:
-    Person(const std::string& pronoun, const Genre& genre, const Number& number,
-        const uint8_t order);
+   /**
+    * Constructor
+    * @param pronoun the pronoun representing the person.
+    * @param genre the person's genre (male, female, none).
+    * @param the person's number (singular, plural).
+    */
+    Person(const std::string& pronoun, const Genre& genre, const Number& number);
 
+    /**
+     * Destructor.
+     */
     virtual
-    ~Person();
+    ~Person() = 0;
 
+    /**
+     * Get the person's pronoun.
+     * @return a string representing the pronoun.
+     */
     const std::string&
     getPronoun() const;
 
+    /**
+     * Get the person's genre.
+     * @return the genre.
+     */
     const Genre
     getGenre() const;
 
+    /**
+     * Get the person's number.
+     * @return the number.
+     */
     const Number
     getNumber() const;
-
-    const uint8_t
-    getOrder() const;
-
-    bool
-    operator<(const Person& right) const;
 
   private:
     std::string m_pronoum;
     Genre m_genre;
     Number m_number;
-    uint8_t m_order;
-
   };
-
 }
 
 namespace qonjug
@@ -75,18 +90,5 @@ namespace qonjug
   {
     return m_number;
   }
-
-  inline const uint8_t
-  Person::getOrder() const
-  {
-    return m_order;
-  }
-
-  inline bool
-  Person::operator<(const Person& right) const
-  {
-    return m_pronoum < right.m_pronoum;
-  }
-
 }
 #endif

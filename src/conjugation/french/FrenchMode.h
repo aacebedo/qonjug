@@ -1,13 +1,13 @@
 /*
-*Copyright (c) 2013 ACEBEDO Alexandre.
-*All rights reserved. This program and the accompanying materials
-*are made available under the terms of the GNU Public License v3.0
-*which accompanies this distribution, and is available at
-*http://www.gnu.org/licenses/gpl.html
-*
-*Contributors:
-*    ACEBEDO Alexandre - initial API and implementation
-*/
+ *Copyright (c) 2013 ACEBEDO Alexandre.
+ *All rights reserved. This program and the accompanying materials
+ *are made available under the terms of the GNU Public License v3.0
+ *which accompanies this distribution, and is available at
+ *http://www.gnu.org/licenses/gpl.html
+ *
+ *Contributors:
+ *    ACEBEDO Alexandre - initial API and implementation
+ */
 
 #ifndef FRENCHMODE_H_
 #define FRENCHMODE_H_
@@ -20,7 +20,10 @@ namespace qonjug
   class FrenchMode : public Mode
   {
   public:
-    FrenchMode(const std::string& name, const std::string& prefix, bool havePronoun);
+
+    FrenchMode(const std::string& name, const std::string& prefix,
+        bool havePronoun);
+
     virtual
     ~FrenchMode();
 
@@ -30,7 +33,17 @@ namespace qonjug
     bool
     havePronoun() const;
 
+    const std::string&
+    getName() const;
+
+    virtual Mode*
+    clone() const;
+
+    virtual bool
+    isLess(const Mode& val) const;
+
   private:
+    std::string m_name;
     std::string m_prefix;
     bool m_havePronoun;
 
@@ -48,10 +61,16 @@ namespace qonjug
   }
 
   inline bool
-   FrenchMode::havePronoun() const
-   {
-     return m_havePronoun;
-   }
+  FrenchMode::havePronoun() const
+  {
+    return m_havePronoun;
+  }
+
+  inline const std::string&
+  FrenchMode::getName() const
+  {
+    return m_name;
+  }
 
 }
 

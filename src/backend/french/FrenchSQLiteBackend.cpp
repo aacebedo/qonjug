@@ -25,6 +25,7 @@
 #include "KompexSQLiteStatement.h"
 #include "KompexSQLiteException.h"
 #include "conjugation/french/FrenchVerb.h"
+#include "conjugation/french/FrenchPerson.h"
 #include "conjugation/Conjugation.h"
 
 namespace qonjug
@@ -45,9 +46,11 @@ namespace qonjug
   std::string FrenchSQLiteBackend::HAVEPRONOUN_COL = "have_pronoun";
   std::string FrenchSQLiteBackend::PREFIX_COL = "suffix";
 
-  FrenchSQLiteBackend::FrenchSQLiteBackend(const std::string& dbFilePath) :
-      SQLiteBackend(dbFilePath)
+  FrenchSQLiteBackend::FrenchSQLiteBackend(const std::string& dbFilePath)
+      throw (std::invalid_argument) :
+      SQLiteConjugationBackend(dbFilePath)
   {
+
     try
       {
         boost::scoped_ptr<Kompex::SQLiteStatement> pSt(
@@ -55,7 +58,7 @@ namespace qonjug
         while (pSt->FetchRow())
           {
             m_availablePersons.push_back(
-                Person(pSt->GetColumnString(PRONOUN_COL),
+                new FrenchPerson(pSt->GetColumnString(PRONOUN_COL),
                     fromCharToGenre(pSt->GetColumnString(GENRE_COL).at(0)),
                     fromIntToNumber(pSt->GetColumnInt(NUMBER_COL)),
                     pSt->GetColumnInt(ORDER_COL)));
@@ -67,7 +70,7 @@ namespace qonjug
         while (pSt->FetchRow())
           {
             m_availableTenses.push_back(
-                FrenchTense(pSt->GetColumnString(TENSE_COL), 0));
+                new FrenchTense(pSt->GetColumnString(TENSE_COL), 0));
           }
         pSt.reset(
             executeQuery(
@@ -82,7 +85,8 @@ namespace qonjug
             if (itTense != getAvailableTenses().end())
               {
                 m_availableTenses.push_back(
-                    FrenchTense(pSt->GetColumnString(TENSE_COL), &*itTense));
+                    new FrenchTense(pSt->GetColumnString(TENSE_COL),
+                        dynamic_cast<const FrenchTense*>(*itTense)));
               }
           }
 
@@ -92,7 +96,7 @@ namespace qonjug
         while (pSt3->FetchRow())
           {
             m_availableModes.push_back(
-                FrenchMode(pSt3->GetColumnString(MODE_COL),
+                new FrenchMode(pSt3->GetColumnString(MODE_COL),
                     pSt3->GetColumnString(PREFIX_COL),
                     pSt3->GetColumnInt(HAVEPRONOUN_COL) != 0));
           }
@@ -109,29 +113,21 @@ namespace qonjug
 
   FrenchSQLiteBackend::~FrenchSQLiteBackend()
   {
-  }
+    for (Modes::iterator it = m_availableModes.begin();
+        it != m_availableModes.end(); ++it)
+      delete *it;
+    for (Tenses::iterator it = m_availableTenses.begin();
+        it != m_availableTenses.end(); ++it)
+      delete *it;
+    for (Persons::iterator it = m_availablePersons.begin();
+        it != m_availablePersons.end(); ++it)
+      delete *it;
 
-  const FrenchSQLiteBackend::Persons&
-  FrenchSQLiteBackend::getAvailablePersons() const
-  {
-    return m_availablePersons;
-  }
-
-  const FrenchSQLiteBackend::Modes&
-  FrenchSQLiteBackend::getAvailableModes() const
-  {
-    return m_availableModes;
-  }
-
-  const FrenchSQLiteBackend::Tenses&
-  FrenchSQLiteBackend::getAvailableTenses() const
-  {
-    return m_availableTenses;
   }
 
   std::vector<boost::shared_ptr<Verb> >*
   FrenchSQLiteBackend::searchVerb(const std::string& toSearch)
-      throw (std::out_of_range, std::runtime_error)
+      throw (std::runtime_error)
   {
     std::vector<boost::shared_ptr<Verb> >* res = new std::vector<
         boost::shared_ptr<Verb> >();
@@ -168,8 +164,7 @@ namespace qonjug
   }
 
   FrenchSQLiteBackend::Conjugations*
-  FrenchSQLiteBackend::conjugate(const Verb& verb) throw (std::out_of_range,
-      std::runtime_error)
+  FrenchSQLiteBackend::conjugate(const Verb& verb) throw (std::runtime_error)
   {
     Conjugations* res = new Conjugations();
 
@@ -177,7 +172,7 @@ namespace qonjug
         getAvailableModes().begin(); itMode != getAvailableModes().end();
         ++itMode)
       {
-        Conjugations* firstRes = conjugate(verb, *itMode);
+        Conjugations* firstRes = conjugate(verb, **itMode);
         if (firstRes->size() != 0)
           {
             res->insert(res->end(), firstRes->begin(), firstRes->end());
@@ -188,7 +183,7 @@ namespace qonjug
 
   FrenchSQLiteBackend::Conjugations*
   FrenchSQLiteBackend::conjugate(const Verb& verb, const Mode& mode)
-      throw (std::out_of_range, std::runtime_error)
+      throw (std::runtime_error)
   {
 
     Conjugations* res = new Conjugations();
@@ -197,7 +192,7 @@ namespace qonjug
         getAvailableTenses().begin(); itTense != getAvailableTenses().end();
         ++itTense)
       {
-        Conjugation* conj = conjugate(verb, mode, *itTense);
+        Conjugation* conj = conjugate(verb, mode, **itTense);
         if (conj != 0)
           {
             res->push_back(boost::shared_ptr<Conjugation>(conj));
@@ -208,7 +203,7 @@ namespace qonjug
 
   Conjugation*
   FrenchSQLiteBackend::conjugate(const Verb& verb, const Mode& mode,
-      const Tense& tense) throw (std::out_of_range, std::runtime_error)
+      const Tense& tense) throw (std::runtime_error)
   {
     Conjugation* res = 0;
     const FrenchVerb* pVerb = dynamic_cast<const FrenchVerb*>(&verb);
@@ -250,23 +245,24 @@ ORDER BY number,persons.ord;",
             executeQuery(statementString));
         if (pSt->GetNumberOfRows() != 0)
           {
-            Conjugation::Terms terms;
+            Conjugation::VerbalForms* pVForms = new Conjugation::VerbalForms();
 
             while (pSt->FetchRow())
               {
                 FrenchSQLiteBackend::Persons::const_iterator itPerson = find_if(
-                    getAvailablePersons().begin(), getAvailablePersons().end(),
+                    getAvailablePersons().begin(),
+                    getAvailablePersons().end(),
                     boost::bind(&Person::getPronoun, _1)
                         == pSt->GetColumnString(PRONOUN_COL));
 
                 if (itPerson != getAvailablePersons().end())
                   {
-                    terms.push_back(
-                        std::make_pair<Person, std::string>(*itPerson,
+                    pVForms->insert(std::make_pair<const Person*,std::string>(
+                        *itPerson,
                             pSt->GetColumnString(CONJUGATION_COL)));
                   }
               }
-            res = new Conjugation(verb, mode, tense, terms);
+            res = new Conjugation(*pVerb, mode, tense, pVForms);
           }
       }
     catch (const Kompex::SQLiteException& e)
@@ -281,51 +277,5 @@ ORDER BY number,persons.ord;",
     return res;
   }
 
-  Conjugation*
-  FrenchSQLiteBackend::conjugate(const Verb& verb, const Mode& mode,
-      const Tense& tense, const Person& person) throw (std::out_of_range,
-          std::runtime_error)
-  {
-    Conjugation* res = 0;
-    const FrenchVerb* pVerb = dynamic_cast<const FrenchVerb*>(&verb);
-    char *sqlStatement =
-        sqlite3_mprintf(
-            "SELECT * FROM conjugations WHERE verb = '%q' AND \
-                pronoun = %q AND \
-                mode = '%q' AND \
-                tense = '%q';",
-            verb.toString().c_str(), person.getPronoun().c_str(),
-            mode.getName().c_str(), tense.getName().c_str());
-    std::string statementString(sqlStatement);
-    sqlite3_free(sqlStatement);
-
-    boost::scoped_ptr<Kompex::SQLiteStatement> pSt(
-        executeQuery(statementString));
-
-    try
-      {
-        Conjugation::Terms terms;
-
-        while (pSt->FetchRow())
-          {
-            terms.push_back(
-                std::make_pair<Person, std::string>(person,
-                    pVerb->getRadical()
-                        + pSt->GetColumnString(TERMINATION_COL)));
-
-          }
-        res = new Conjugation(verb, mode, tense, terms);
-      }
-    catch (const Kompex::SQLiteException& e)
-      {
-        throw std::runtime_error(e.GetString());
-      }
-    catch (const std::invalid_argument& e)
-      {
-        throw std::runtime_error("invalid verb group");
-      }
-
-    return res;
-  }
 
 } /* namespace qonjug */

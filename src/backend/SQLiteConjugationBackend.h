@@ -1,13 +1,13 @@
 /*
-*Copyright (c) 2013 ACEBEDO Alexandre.
-*All rights reserved. This program and the accompanying materials
-*are made available under the terms of the GNU Public License v3.0
-*which accompanies this distribution, and is available at
-*http://www.gnu.org/licenses/gpl.html
-*
-*Contributors:
-*    ACEBEDO Alexandre - initial API and implementation
-*/
+ *Copyright (c) 2013 ACEBEDO Alexandre.
+ *All rights reserved. This program and the accompanying materials
+ *are made available under the terms of the GNU Public License v3.0
+ *which accompanies this distribution, and is available at
+ *http://www.gnu.org/licenses/gpl.html
+ *
+ *Contributors:
+ *    ACEBEDO Alexandre - initial API and implementation
+ */
 
 #ifndef QONJUG_SQLITEBACKEND_H_
 #define QONJUG_SQLITEBACKEND_H_
@@ -18,14 +18,14 @@
 #include <stdexcept>
 
 #include "fwd_decls.h"
-#include "backend/VerbAccessBackend.h"
+#include "backend/ConjugationBackend.h"
 
 namespace qonjug
 {
   /**
    * Default SQLite backend.
    */
-  class SQLiteBackend : public qonjug::VerbAccessBackend
+  class SQLiteConjugationBackend : public qonjug::ConjugationBackend
   {
   private:
     static ::log4cxx::Logger * LOGGER; /// Logger for all operations on SQLite.
@@ -34,13 +34,14 @@ namespace qonjug
     /**
      * Default constructor
      */
-    SQLiteBackend(const std::string& dbFilePath) throw (std::invalid_argument);
+    SQLiteConjugationBackend(const std::string& dbFilePath)
+        throw (std::invalid_argument);
 
     /**
      * Default destructor.
      */
     virtual
-    ~SQLiteBackend() = 0;
+    ~SQLiteConjugationBackend() = 0;
 
   protected:
     /**
@@ -49,11 +50,11 @@ namespace qonjug
      * @return a pointer to the SQLiteStatement resulting of the query execution.
      * @throw runtime_error
      */
-    boost::shared_ptr<Kompex::SQLiteStatement>
+    Kompex::SQLiteStatement*
     executeQuery(const std::string& query) throw (std::runtime_error);
 
   protected:
-    std::auto_ptr<Kompex::SQLiteDatabase> m_pDatabase;
+    Kompex::SQLiteDatabase* m_pDatabase;
   };
 }
 

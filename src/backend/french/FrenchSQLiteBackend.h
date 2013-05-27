@@ -1,13 +1,13 @@
 /*
-*Copyright (c) 2013 ACEBEDO Alexandre.
-*All rights reserved. This program and the accompanying materials
-*are made available under the terms of the GNU Public License v3.0
-*which accompanies this distribution, and is available at
-*http://www.gnu.org/licenses/gpl.html
-*
-*Contributors:
-*    ACEBEDO Alexandre - initial API and implementation
-*/
+ *Copyright (c) 2013 ACEBEDO Alexandre.
+ *All rights reserved. This program and the accompanying materials
+ *are made available under the terms of the GNU Public License v3.0
+ *which accompanies this distribution, and is available at
+ *http://www.gnu.org/licenses/gpl.html
+ *
+ *Contributors:
+ *    ACEBEDO Alexandre - initial API and implementation
+ */
 
 #ifndef FRENCHSQLITEBACKEND_H_
 #define FRENCHSQLITEBACKEND_H_
@@ -16,7 +16,7 @@
 #include <log4cxx/logger.h>
 
 #include "fwd_decls.h"
-#include "backend/SQLiteBackend.h"
+#include "backend/SQLiteConjugationBackend.h"
 #include "conjugation/french/FrenchMode.h"
 #include "conjugation/french/FrenchTense.h"
 
@@ -25,7 +25,7 @@ namespace qonjug
   /**
    * SQLite backend for french language.
    */
-  class FrenchSQLiteBackend : public SQLiteBackend
+  class FrenchSQLiteBackend : public SQLiteConjugationBackend
   {
 
   private:
@@ -54,7 +54,8 @@ namespace qonjug
      * @param dbFilePath the path to the database containing the french conjugation.
      * @throw invalid_argument when the file path to the database is invalid.
      */
-    FrenchSQLiteBackend(const std::string& dbFilePath) throw (std::invalid_argument);
+    FrenchSQLiteBackend(const std::string& dbFilePath)
+        throw (std::invalid_argument);
 
     /**
      * Default destructor.
@@ -62,25 +63,18 @@ namespace qonjug
     virtual
     ~FrenchSQLiteBackend();
 
-
-    boost::shared_ptr<VerbSearchResult>
+    VerbSearchResult*
     searchVerb(const std::string& toSearch) throw (std::runtime_error);
 
+    virtual Conjugations*
+    conjugate(const Verb& verb) throw (std::runtime_error);
 
-    virtual  boost::shared_ptr<Conjugations>
-    conjugate(const Verb& verb) throw (std::out_of_range, std::runtime_error);
+    virtual Conjugations*
+    conjugate(const Verb& verb, const Mode& mode) throw (std::runtime_error);
 
-    virtual  boost::shared_ptr<Conjugations>
-    conjugate(const Verb& verb, const Mode& mode) throw (std::out_of_range,
-        std::runtime_error);
-
-    virtual  boost::shared_ptr<Conjugation>
+    virtual Conjugation*
     conjugate(const Verb& verb, const Mode& mode, const Tense& tense)
-        throw (std::out_of_range, std::runtime_error);
-
-    virtual  boost::shared_ptr<Conjugation>
-    conjugate(const Verb& verb, const Mode& mode, const Tense& tense,
-        const Person& person) throw (std::out_of_range, std::runtime_error);
+        throw (std::runtime_error);
 
     virtual const Persons&
     getAvailablePersons() const;
@@ -97,5 +91,27 @@ namespace qonjug
     Modes m_availableModes;
 
   };
+}
+
+namespace qonjug
+{
+
+  inline const FrenchSQLiteBackend::Persons&
+  FrenchSQLiteBackend::getAvailablePersons() const
+  {
+    return m_availablePersons;
+  }
+
+  inline const FrenchSQLiteBackend::Modes&
+  FrenchSQLiteBackend::getAvailableModes() const
+  {
+    return m_availableModes;
+  }
+
+  inline const FrenchSQLiteBackend::Tenses&
+  FrenchSQLiteBackend::getAvailableTenses() const
+  {
+    return m_availableTenses;
+  }
 }
 #endif

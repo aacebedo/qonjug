@@ -1,0 +1,12 @@
+Source: libqonjug
+Priority: devel
+Maintainer: Alexandre ACEBEDO <alexandre.acebedo@gmail.com>
+Build-Depends: cmake, build-essential, libsqlite3-dev, libkompex, libboost-dev
+Standards-Version: 3.9.4
+Section: libs
+Homepage: http://qonjug.popular-design.fr
+
+Package: libqonjug
+Architecture: any
+Depends: libsqlite3, libkompex, libboost
+Description: French conjugation library. 

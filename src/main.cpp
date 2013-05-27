@@ -13,7 +13,7 @@
 #include "conjugation/Conjugation.h"
 #include "rendering/FrenchConsoleRenderer.h"
 #include "backend/french/FrenchSQLiteBackend.h"
-#include "VerbFactory.h"
+
 #include <log4cxx/logger.h>
 #include <iostream>
 #include <iterator>
@@ -50,21 +50,25 @@ main(int argc, char** argv)
    }*/
 
   Renderer* pRenderer = new FrenchConsoleRenderer();
-  FrenchSQLiteBackend b("conjugation_fr.db");
-  std::vector<boost::shared_ptr<Verb> >* res = b.searchVerb("manger");
+  FrenchSQLiteBackend b("share/conjugation_fr.db");
+  std::vector<boost::shared_ptr<Verb> >* res = b.searchVerb("chanter");
   const FrenchSQLiteBackend::Modes& m = b.getAvailableModes();
   const FrenchSQLiteBackend::Tenses& t = b.getAvailableTenses();
-  VerbAccessBackend::Conjugations* c = b.conjugate(**res->begin());
-  for (VerbAccessBackend::Conjugations::const_iterator itC = c->begin();
+  ConjugationBackend::Conjugations* c = b.conjugate(**res->begin());
+
+  for (ConjugationBackend::Conjugations::const_iterator itC = c->begin();
        itC != c->end(); ++itC)
     {
+
      (**itC).render(pRenderer);
     }
 
+
+
   //Conjugation* c;
-  for (FrenchSQLiteBackend::Modes::const_iterator itMode = m.begin();
-      itMode != m.end(); ++itMode)
-    {
+  //for (FrenchSQLiteBackend::Modes::const_iterator itMode = m-begin();
+   //   itMode != m.end(); ++itMode)
+    //{
     //  std::cout << (*itMode).getName() << std::endl;
       /*for (FrenchSQLiteBackend::Tenses::const_iterator itTense = t.begin();
           itTense != t.end(); ++itTense)
@@ -86,6 +90,6 @@ main(int argc, char** argv)
             }
 
         }*/
-    }
+    //}
 
 }

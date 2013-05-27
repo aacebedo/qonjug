@@ -14,11 +14,6 @@
 namespace qonjug
 {
 
-  Mode::Mode(const std::string & name) :
-      m_name(name)
-  {
-  }
-
   Mode::~Mode()
   {
   }

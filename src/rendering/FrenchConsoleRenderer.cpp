@@ -42,15 +42,15 @@ namespace qonjug
     char voyels[]= {'a','e','i','o','u'};
     char* voyelsEnd = voyels+(sizeof(voyels)/sizeof(char));
 
-    for (Conjugation::Terms::const_iterator it = c.getTerms().begin();
-        it != c.getTerms().end(); ++it)
+    for (Conjugation::VerbalForms::const_iterator it = c.getVerbalForms().begin();
+        it != c.getVerbalForms().end(); ++it)
       {
         std::cout << "  "  <<
-            ((std::find(voyels,voyelsEnd,it->first.getPronoun()[0])!=voyelsEnd && std::find(voyels,voyelsEnd,mode.getPrefix()[mode.getPrefix().length()-1])!=voyelsEnd)?
+            ((std::find(voyels,voyelsEnd,it->first->getPronoun()[0])!=voyelsEnd && std::find(voyels,voyelsEnd,mode.getPrefix()[mode.getPrefix().length()-1])!=voyelsEnd)?
             mode.getPrefix().substr(0,mode.getPrefix().length()-1)+'\'':(mode.getPrefix().length()!=0)?mode.getPrefix()+" ":"")
             << ((mode.havePronoun()) ?
-                (it->first.getPronoun() == "je" && std::find(voyels,voyelsEnd,it->second[0])!=voyelsEnd)?
-                    "j'":it->first.getPronoun() + " " :"")
+                (it->first->getPronoun() == "je" && std::find(voyels,voyelsEnd,it->second[0])!=voyelsEnd)?
+                    "j'":it->first->getPronoun() + " " :"")
             << it->second << std::endl;
 
       }
