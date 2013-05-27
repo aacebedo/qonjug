@@ -54,7 +54,7 @@ namespace qonjug
             executeQuery("SELECT * FROM persons;"));
         while (pSt->FetchRow())
           {
-            m_availablePersons.insert(
+            m_availablePersons.push_back(
                 Person(pSt->GetColumnString(PRONOUN_COL),
                     fromCharToGenre(pSt->GetColumnString(GENRE_COL).at(0)),
                     fromIntToNumber(pSt->GetColumnInt(NUMBER_COL)),
@@ -63,35 +63,35 @@ namespace qonjug
 
         pSt.reset(
             executeQuery(
-                "SELECT tense,aux_tense FROM mode_tense WHERE aux_tense IS NULL GROUP BY tense;"));
+                "SELECT tense,aux_tense FROM mode_tense WHERE aux_tense IS NULL GROUP BY tense ORDER BY ord;"));
         while (pSt->FetchRow())
           {
-            m_availableTenses.insert(
+            m_availableTenses.push_back(
                 FrenchTense(pSt->GetColumnString(TENSE_COL), 0));
           }
         pSt.reset(
             executeQuery(
-                "SELECT tense,aux_tense FROM mode_tense WHERE aux_tense IS NOT NULL GROUP BY tense;"));
+                "SELECT tense,aux_tense FROM mode_tense WHERE aux_tense IS NOT NULL GROUP BY tense ORDER BY ord;"));
         while (pSt->FetchRow())
           {
-            FrenchSQLiteBackend::Tenses::iterator itTense = find_if(
+            FrenchSQLiteBackend::Tenses::const_iterator itTense = find_if(
                 getAvailableTenses().begin(), getAvailableTenses().end(),
                 boost::bind(&Tense::getName, _1)
                     == pSt->GetColumnString(AUXTENSE_COL));
 
             if (itTense != getAvailableTenses().end())
               {
-                m_availableTenses.insert(
+                m_availableTenses.push_back(
                     FrenchTense(pSt->GetColumnString(TENSE_COL), &*itTense));
               }
           }
 
         boost::scoped_ptr<Kompex::SQLiteStatement> pSt3(
             executeQuery(
-                "SELECT mode,suffix,have_pronoun FROM mode_tense GROUP BY mode;"));
+                "SELECT mode,suffix,have_pronoun FROM mode_tense GROUP BY mode ORDER BY ord;"));
         while (pSt3->FetchRow())
           {
-            m_availableModes.insert(
+            m_availableModes.push_back(
                 FrenchMode(pSt3->GetColumnString(MODE_COL),
                     pSt3->GetColumnString(PREFIX_COL),
                     pSt3->GetColumnInt(HAVEPRONOUN_COL) != 0));
@@ -230,15 +230,16 @@ AND persons.pronoun = conjugations.pronoun) || ' ' || radical || conjugations2.t
 ELSE radical || conjugations2.termination END  as conjugation, \
 conjugations2.pronoun \
 FROM verbs, conjugations as conjugations2, persons, mode_tense as mode_tense2 \
-WHERE verbs.radical || verbs.termination = '%q' \
-AND conjugations2.verb = verbs.radical || verbs.termination \
+WHERE conjugations2.verb = verbs.radical || verbs.termination \
 AND conjugations2.pronoun = persons.pronoun \
 AND mode_tense2.mode = conjugations2.mode \
 AND mode_tense2.tense = conjugations2.tense \
+AND conjugation IS NOT NULL \
+AND verbs.radical || verbs.termination = '%q' \
 AND conjugations2.mode ='%q' \
 AND conjugations2.tense = '%q' \
 GROUP  BY conjugations2.pronoun \
-ORDER BY number,ord;",
+ORDER BY number,persons.ord;",
             verb.toString().c_str(), mode.getName().c_str(),
             tense.getName().c_str());
     std::string statementString(sqlStatement);
@@ -253,7 +254,7 @@ ORDER BY number,ord;",
 
             while (pSt->FetchRow())
               {
-                FrenchSQLiteBackend::Persons::iterator itPerson = find_if(
+                FrenchSQLiteBackend::Persons::const_iterator itPerson = find_if(
                     getAvailablePersons().begin(), getAvailablePersons().end(),
                     boost::bind(&Person::getPronoun, _1)
                         == pSt->GetColumnString(PRONOUN_COL));

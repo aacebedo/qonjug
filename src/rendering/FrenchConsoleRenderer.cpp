@@ -16,6 +16,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+
 namespace qonjug
 {
 
@@ -33,19 +34,23 @@ namespace qonjug
     const FrenchMode& mode = dynamic_cast<const FrenchMode&>(c.getMode());
     const FrenchTense& tense = dynamic_cast<const FrenchTense&>(c.getTense());
 
+    std::string defaultFont = "\033[0m";
+    std::string boldFont= "\033[1m";
 
-
-    std::cout << mode.getName() << " " << tense.getName() << ":" << std::endl;
-
+    std::cout << boldFont << mode.getName() << " " << tense.getName() << ":" <<  defaultFont << std::endl;
 
     char voyels[]= {'a','e','i','o','u'};
+    char* voyelsEnd = voyels+(sizeof(voyels)/sizeof(char));
+
     for (Conjugation::Terms::const_iterator it = c.getTerms().begin();
         it != c.getTerms().end(); ++it)
       {
-        std::cout << mode.getPrefix() << " "
+        std::cout << "  "  <<
+            ((std::find(voyels,voyelsEnd,it->first.getPronoun()[0])!=voyelsEnd && std::find(voyels,voyelsEnd,mode.getPrefix()[mode.getPrefix().length()-1])!=voyelsEnd)?
+            mode.getPrefix().substr(0,mode.getPrefix().length()-1)+'\'':(mode.getPrefix().length()!=0)?mode.getPrefix()+" ":"")
             << ((mode.havePronoun()) ?
-                (it->first.getPronoun() == "je" && std::find(voyels,voyels+(sizeof(voyels)/sizeof(char)),it->second[0])!=voyels+(sizeof(voyels)/sizeof(char)))?
-                    "j'":it->first.getPronoun() + " " : " ")
+                (it->first.getPronoun() == "je" && std::find(voyels,voyelsEnd,it->second[0])!=voyelsEnd)?
+                    "j'":it->first.getPronoun() + " " :"")
             << it->second << std::endl;
 
       }

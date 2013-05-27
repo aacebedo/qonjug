@@ -9,13 +9,11 @@
 *    ACEBEDO Alexandre - initial API and implementation
 */
 
-#include "VerbAccessBackend.h"
+#include "backend/VerbAccessBackend.h"
 
 namespace qonjug
 {
-
   VerbAccessBackend::~VerbAccessBackend()
   {
   }
-
 }

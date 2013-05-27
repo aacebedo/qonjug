@@ -15,23 +15,25 @@
 #include <string>
 #include <log4cxx/logger.h>
 
+#include "fwd_decls.h"
 #include "backend/SQLiteBackend.h"
-
 #include "conjugation/french/FrenchMode.h"
 #include "conjugation/french/FrenchTense.h"
 
 namespace qonjug
 {
+  /**
+   * SQLite backend for french language.
+   */
   class FrenchSQLiteBackend : public SQLiteBackend
   {
 
-  public:
-    typedef std::set<Person> Persons;
-    typedef std::set<FrenchTense> Tenses;
-    typedef std::set<FrenchMode> Modes;
-
   private:
     static ::log4cxx::Logger * LOGGER;
+
+    /**
+     * Static strings representing databases columns.
+     */
     static std::string RADICAL_COL;
     static std::string TERMINATION_COL;
     static std::string CONJUGATION_COL;
@@ -47,27 +49,36 @@ namespace qonjug
     static std::string PREFIX_COL;
 
   public:
-    FrenchSQLiteBackend(const std::string& dbFilePath);
+    /**
+     * Default constructor.
+     * @param dbFilePath the path to the database containing the french conjugation.
+     * @throw invalid_argument when the file path to the database is invalid.
+     */
+    FrenchSQLiteBackend(const std::string& dbFilePath) throw (std::invalid_argument);
 
+    /**
+     * Default destructor.
+     */
     virtual
     ~FrenchSQLiteBackend();
 
-    std::vector<boost::shared_ptr<Verb> >*
-    searchVerb(const std::string& toSearch) throw (std::out_of_range,
-        std::runtime_error);
 
-    virtual Conjugations*
+    boost::shared_ptr<VerbSearchResult>
+    searchVerb(const std::string& toSearch) throw (std::runtime_error);
+
+
+    virtual  boost::shared_ptr<Conjugations>
     conjugate(const Verb& verb) throw (std::out_of_range, std::runtime_error);
 
-    virtual Conjugations*
+    virtual  boost::shared_ptr<Conjugations>
     conjugate(const Verb& verb, const Mode& mode) throw (std::out_of_range,
         std::runtime_error);
 
-    virtual Conjugation*
+    virtual  boost::shared_ptr<Conjugation>
     conjugate(const Verb& verb, const Mode& mode, const Tense& tense)
         throw (std::out_of_range, std::runtime_error);
 
-    virtual Conjugation*
+    virtual  boost::shared_ptr<Conjugation>
     conjugate(const Verb& verb, const Mode& mode, const Tense& tense,
         const Person& person) throw (std::out_of_range, std::runtime_error);
 

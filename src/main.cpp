@@ -51,7 +51,7 @@ main(int argc, char** argv)
 
   Renderer* pRenderer = new FrenchConsoleRenderer();
   FrenchSQLiteBackend b("conjugation_fr.db");
-  std::vector<boost::shared_ptr<Verb> >* res = b.searchVerb("chan");
+  std::vector<boost::shared_ptr<Verb> >* res = b.searchVerb("manger");
   const FrenchSQLiteBackend::Modes& m = b.getAvailableModes();
   const FrenchSQLiteBackend::Tenses& t = b.getAvailableTenses();
   VerbAccessBackend::Conjugations* c = b.conjugate(**res->begin());

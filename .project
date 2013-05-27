@@ -3,8 +3,6 @@
 	<name>Qonjug</name>
 	<comment></comment>
 	<projects>
-		<project>Kompex</project>
-		<project>pugix</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

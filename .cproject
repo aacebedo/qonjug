@@ -38,8 +38,7 @@
 								<option id="gnu.cpp.compiler.option.optimization.level.1140114833" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.debugging.level.533379451" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.606602396" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Kompex/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pugix}&quot;"/>
+									<listOptionValue builtIn="false" value="/home/aacebedo/work/test/include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.1375330748" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0" valueType="string"/>
@@ -48,13 +47,12 @@
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.73846883" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.788743098" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
 								<option id="gnu.cpp.link.option.libs.1110056055" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="Kompex"/>
-									<listOptionValue builtIn="false" value="ncurses"/>
-									<listOptionValue builtIn="false" value="pugix"/>
+									<listOptionValue builtIn="false" value="kompex"/>
+									<listOptionValue builtIn="false" value="sqlite3"/>
 									<listOptionValue builtIn="false" value="log4cxx"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.1074996681" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
+									<listOptionValue builtIn="false" value="/home/aacebedo/work/test/lib"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1630152782" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
