@@ -28,7 +28,7 @@ namespace qonjug
     ~Renderable() = 0;
 
     virtual void
-    render(Renderer * pRenderer) const = 0;
+    render(Renderer& pRenderer) const = 0;
   };
 }
 

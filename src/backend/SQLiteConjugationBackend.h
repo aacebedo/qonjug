@@ -27,8 +27,8 @@ namespace qonjug
    */
   class SQLiteConjugationBackend : public qonjug::ConjugationBackend
   {
-  private:
-    static ::log4cxx::Logger * LOGGER; /// Logger for all operations on SQLite.
+  protected:
+    static ::log4cxx::LoggerPtr LOGGER; /// Logger for all operations on SQLite.
 
   public:
     /**

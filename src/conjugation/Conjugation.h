@@ -62,7 +62,7 @@ namespace qonjug
     getVerbalForms() const;
 
     virtual  void
-    render(Renderer * pRenderer) const;
+    render(Renderer & pRenderer) const;
 
   private:
     Mode* m_pMode;

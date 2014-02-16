@@ -21,6 +21,8 @@ namespace qonjug
   public:
     FrenchTense(const std::string& name, const FrenchTense* pAuxTense);
 
+    FrenchTense(const FrenchTense& orig);
+
     virtual
     ~FrenchTense();
 

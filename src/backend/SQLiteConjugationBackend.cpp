@@ -18,8 +18,8 @@
 
 namespace qonjug
 {
-  log4cxx::Logger* SQLiteConjugationBackend::LOGGER =
-      log4cxx::Logger::getLogger("qonjug.main");
+   ::log4cxx::LoggerPtr SQLiteConjugationBackend::LOGGER(
+      log4cxx::Logger::getLogger("qonjug.main"));
 
   SQLiteConjugationBackend::SQLiteConjugationBackend(
       const std::string& dbFilePath) throw (std::invalid_argument)

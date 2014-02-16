@@ -20,14 +20,18 @@
 #include <algorithm>
 #include "KompexSQLiteException.h"
 #include <tclap/CmdLine.h>
+#include <boost/scoped_ptr.hpp>
 
+#include "log4cxx/logger.h"
+#include "log4cxx/basicconfigurator.h"
+#include "log4cxx/helpers/exception.h"
 using namespace qonjug;
 
 int
 main(int argc, char** argv)
 {
 
-  /*try
+  try
    {
 
    TCLAP::CmdLine cmd("Quonjug", ' ', "0.1");
@@ -47,23 +51,32 @@ main(int argc, char** argv)
    {
    std::cerr << "error: " << e.error() << " for arg " << e.argId()
    << std::endl;
-   }*/
+   }
 
-  Renderer* pRenderer = new FrenchConsoleRenderer();
+  boost::scoped_ptr<Renderer> pRenderer( new FrenchConsoleRenderer());
   FrenchSQLiteBackend b("share/conjugation_fr.db");
-  std::vector<boost::shared_ptr<Verb> >* res = b.searchVerb("chanter");
+  boost::scoped_ptr<FrenchSQLiteBackend::VerbSearchResult> res(b.searchVerb("chanter"));
   const FrenchSQLiteBackend::Modes& m = b.getAvailableModes();
   const FrenchSQLiteBackend::Tenses& t = b.getAvailableTenses();
-  ConjugationBackend::Conjugations* c = b.conjugate(**res->begin());
+  boost::scoped_ptr<ConjugationBackend::Conjugations> c(b.conjugate(**res->begin()));
 
-  for (ConjugationBackend::Conjugations::const_iterator itC = c->begin();
+
+  for (ConjugationBackend::Conjugations::iterator itC = c->begin();
        itC != c->end(); ++itC)
     {
+     (**itC).render(*pRenderer);
 
-     (**itC).render(pRenderer);
     }
 
 
+//  log4cxx::BasicConfigurator::configure();
+ //     log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("main"));
+   //   LOG4CXX_DEBUG(logger, "Hello World");
+
+
+
+
+return 0;
 
   //Conjugation* c;
   //for (FrenchSQLiteBackend::Modes::const_iterator itMode = m-begin();

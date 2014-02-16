@@ -14,7 +14,7 @@
 
 #include <string>
 #include <log4cxx/logger.h>
-
+#include <boost/scoped_ptr.hpp>
 #include "fwd_decls.h"
 #include "backend/SQLiteConjugationBackend.h"
 #include "conjugation/french/FrenchMode.h"
@@ -29,7 +29,6 @@ namespace qonjug
   {
 
   private:
-    static ::log4cxx::Logger * LOGGER;
 
     /**
      * Static strings representing databases columns.

@@ -9,6 +9,7 @@
  *    ACEBEDO Alexandre - initial API and implementation
  */
 
+#include <stdio.h>
 #include "conjugation/Conjugation.h"
 #include "conjugation/Verb.h"
 #include "conjugation/Mode.h"
@@ -34,12 +35,13 @@ namespace qonjug
     delete m_pVerb;
     delete m_pTense;
     delete m_pVerbalForms;
+
   }
 
   void
-  Conjugation::render(Renderer * pRenderer) const
+  Conjugation::render(Renderer& pRenderer) const
   {
-    pRenderer->render(*this);
+    pRenderer.render(*this);
   }
 
 }

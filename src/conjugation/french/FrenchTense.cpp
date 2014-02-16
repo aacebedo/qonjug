@@ -18,9 +18,23 @@ namespace qonjug
       const FrenchTense* pAuxTense) :
       m_name(name)
   {
+    m_pAuxTense = 0;
     if (pAuxTense != 0)
       {
         m_pAuxTense = dynamic_cast<FrenchTense*>(pAuxTense->clone());
+      }
+  }
+
+  FrenchTense::FrenchTense(const FrenchTense& orig) :
+      Tense(orig)
+  {
+    if (orig.m_pAuxTense != 0)
+      {
+        m_pAuxTense = new FrenchTense(*(orig.m_pAuxTense));
+      }
+    else
+      {
+        m_pAuxTense = orig.m_pAuxTense;
       }
   }
 

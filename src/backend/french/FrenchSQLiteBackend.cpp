@@ -30,8 +30,7 @@
 
 namespace qonjug
 {
-  log4cxx::Logger* FrenchSQLiteBackend::LOGGER = log4cxx::Logger::getLogger(
-      "qonjug.main");
+
   std::string FrenchSQLiteBackend::RADICAL_COL = "radical";
   std::string FrenchSQLiteBackend::TERMINATION_COL = "termination";
   std::string FrenchSQLiteBackend::CONJUGATION_COL = "conjugation";
@@ -51,8 +50,10 @@ namespace qonjug
       SQLiteConjugationBackend(dbFilePath)
   {
 
+
     try
       {
+        /// Fetch the available persons from the database.
         boost::scoped_ptr<Kompex::SQLiteStatement> pSt(
             executeQuery("SELECT * FROM persons;"));
         while (pSt->FetchRow())
@@ -63,7 +64,16 @@ namespace qonjug
                     fromIntToNumber(pSt->GetColumnInt(NUMBER_COL)),
                     pSt->GetColumnInt(ORDER_COL)));
           }
+        LOG4CXX_DEBUG(LOGGER,
+            "Found "<<m_availablePersons.size()<<" persons in the database.");
+        if (m_availablePersons.size() == 0)
+          {
+            throw std::invalid_argument("No person available in the database");
+          }
 
+        /// Fetch the available tenses from the database.
+        /// In french some tenses (passé composé, plus que parfait) need an auxiliary tense to be conjugated.
+        /// Begin with the tenses that do not need an auxiliary tense.
         pSt.reset(
             executeQuery(
                 "SELECT tense,aux_tense FROM mode_tense WHERE aux_tense IS NULL GROUP BY tense ORDER BY ord;"));
@@ -72,11 +82,20 @@ namespace qonjug
             m_availableTenses.push_back(
                 new FrenchTense(pSt->GetColumnString(TENSE_COL), 0));
           }
+
+        if (m_availableTenses.size() == 0)
+          {
+            throw std::invalid_argument("No tenses available in the database");
+          }
+
+        /// Then fetch the tenses that need an auxiliary tense.
         pSt.reset(
             executeQuery(
                 "SELECT tense,aux_tense FROM mode_tense WHERE aux_tense IS NOT NULL GROUP BY tense ORDER BY ord;"));
+
         while (pSt->FetchRow())
           {
+            /// Make a check to ensure the auxiliary tense is already in the list.
             FrenchSQLiteBackend::Tenses::const_iterator itTense = find_if(
                 getAvailableTenses().begin(), getAvailableTenses().end(),
                 boost::bind(&Tense::getName, _1)
@@ -88,17 +107,34 @@ namespace qonjug
                     new FrenchTense(pSt->GetColumnString(TENSE_COL),
                         dynamic_cast<const FrenchTense*>(*itTense)));
               }
-          }
+            else
+              {
+              //  LOG4CXX_WARN(LOGGER,
+               //     "Tense "<<pSt->GetColumnString(TENSE_COL)<<" declares to need an auxiliary tense needs named" << pSt->GetColumnString(AUXTENSE_COL)<< ", but the latter has not been found in the database. The tense will be ignore, please check");
+                LOG4CXX_WARN(LOGGER,
+                                   "Tense ");
 
-        boost::scoped_ptr<Kompex::SQLiteStatement> pSt3(
+              }
+          }
+        LOG4CXX_DEBUG(LOGGER,
+            "Found "<<m_availableTenses.size()<<" tenses in the database.");
+
+        /// Fetch the available modes from the database.
+        pSt.reset(
             executeQuery(
                 "SELECT mode,suffix,have_pronoun FROM mode_tense GROUP BY mode ORDER BY ord;"));
-        while (pSt3->FetchRow())
+        while (pSt->FetchRow())
           {
             m_availableModes.push_back(
-                new FrenchMode(pSt3->GetColumnString(MODE_COL),
-                    pSt3->GetColumnString(PREFIX_COL),
-                    pSt3->GetColumnInt(HAVEPRONOUN_COL) != 0));
+                new FrenchMode(pSt->GetColumnString(MODE_COL),
+                    pSt->GetColumnString(PREFIX_COL),
+                    pSt->GetColumnInt(HAVEPRONOUN_COL) != 0));
+          }
+        LOG4CXX_DEBUG(LOGGER,
+            "Found "<<m_availableModes.size()<<" modes in the database.");
+        if (m_availableModes.size() == 0)
+          {
+            throw std::invalid_argument("No modes available in the database");
           }
       }
     catch (const Kompex::SQLiteException& e)
@@ -113,6 +149,7 @@ namespace qonjug
 
   FrenchSQLiteBackend::~FrenchSQLiteBackend()
   {
+    /// Delete all pointers created in the instance's vectors.
     for (Modes::iterator it = m_availableModes.begin();
         it != m_availableModes.end(); ++it)
       delete *it;
@@ -123,14 +160,13 @@ namespace qonjug
         it != m_availablePersons.end(); ++it)
       delete *it;
 
-  }
+   }
 
-  std::vector<boost::shared_ptr<Verb> >*
+  ConjugationBackend::VerbSearchResult*
   FrenchSQLiteBackend::searchVerb(const std::string& toSearch)
       throw (std::runtime_error)
   {
-    std::vector<boost::shared_ptr<Verb> >* res = new std::vector<
-        boost::shared_ptr<Verb> >();
+    VerbSearchResult* res = new VerbSearchResult();
 
     char *sqlStatement =
         sqlite3_mprintf(
@@ -142,6 +178,7 @@ namespace qonjug
     try
       {
         boost::scoped_ptr<Kompex::SQLiteStatement> pSt(executeQuery(s));
+        /// Fetch the verb results from the database.
         while (pSt->FetchRow())
           {
             Verb* p = new FrenchVerb(pSt->GetColumnString(RADICAL_COL),
@@ -150,6 +187,8 @@ namespace qonjug
             boost::shared_ptr<Verb> sp(p);
             res->push_back(sp);
           }
+        LOG4CXX_DEBUG(LOGGER,
+            "Found "<<res->size()<<" verbs corresponding to "<<toSearch<<".");
       }
     catch (const Kompex::SQLiteException& e)
       {
@@ -167,12 +206,13 @@ namespace qonjug
   FrenchSQLiteBackend::conjugate(const Verb& verb) throw (std::runtime_error)
   {
     Conjugations* res = new Conjugations();
-
+    /// For each available mode.
     for (FrenchSQLiteBackend::Modes::const_iterator itMode =
         getAvailableModes().begin(); itMode != getAvailableModes().end();
         ++itMode)
       {
-        Conjugations* firstRes = conjugate(verb, **itMode);
+        // Try to conjugate the verb.
+        boost::scoped_ptr<Conjugations> firstRes(conjugate(verb, **itMode));
         if (firstRes->size() != 0)
           {
             res->insert(res->end(), firstRes->begin(), firstRes->end());
@@ -188,14 +228,16 @@ namespace qonjug
 
     Conjugations* res = new Conjugations();
 
+    /// For each available tense.
     for (FrenchSQLiteBackend::Tenses::const_iterator itTense =
         getAvailableTenses().begin(); itTense != getAvailableTenses().end();
         ++itTense)
       {
+        /// Try to conjugate the verb with the tense and the given mode.
         Conjugation* conj = conjugate(verb, mode, **itTense);
         if (conj != 0)
           {
-            res->push_back(boost::shared_ptr<Conjugation>(conj));
+            res->push_back( boost::shared_ptr<Conjugation>(conj));
           }
       }
     return res;
@@ -206,7 +248,6 @@ namespace qonjug
       const Tense& tense) throw (std::runtime_error)
   {
     Conjugation* res = 0;
-    const FrenchVerb* pVerb = dynamic_cast<const FrenchVerb*>(&verb);
     char *sqlStatement =
         sqlite3_mprintf(
             "SELECT CASE WHEN \
@@ -250,8 +291,7 @@ ORDER BY number,persons.ord;",
             while (pSt->FetchRow())
               {
                 FrenchSQLiteBackend::Persons::const_iterator itPerson = find_if(
-                    getAvailablePersons().begin(),
-                    getAvailablePersons().end(),
+                    getAvailablePersons().begin(), getAvailablePersons().end(),
                     boost::bind(&Person::getPronoun, _1)
                         == pSt->GetColumnString(PRONOUN_COL));
 
@@ -260,9 +300,10 @@ ORDER BY number,persons.ord;",
                     pVForms->insert(std::make_pair<const Person*,std::string>(
                         *itPerson,
                             pSt->GetColumnString(CONJUGATION_COL)));
+
                   }
               }
-            res = new Conjugation(*pVerb, mode, tense, pVForms);
+            res = new Conjugation(verb, mode, tense, pVForms);
           }
       }
     catch (const Kompex::SQLiteException& e)
@@ -276,6 +317,5 @@ ORDER BY number,persons.ord;",
 
     return res;
   }
-
 
 } /* namespace qonjug */
